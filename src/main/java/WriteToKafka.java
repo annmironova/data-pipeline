@@ -27,7 +27,6 @@ public class WriteToKafka {
                 .option("kafka.bootstrap.servers", brokers)
                 .option("topic", topicName)
                 .save();
-
     }
 
 
