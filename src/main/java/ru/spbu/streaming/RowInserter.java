@@ -51,56 +51,8 @@ public class RowInserter {
                 }
         ).trigger(Trigger.ProcessingTime("2 seconds")).start();
 
-//        datasetTransformed.writeStream().foreachBatch((batch, count) -> {
-//            Properties connectionProperties = new Properties();
-//            connectionProperties.put("user", user);
-//            connectionProperties.put("password", password);
-//
-//            batch.write()
-//                    .jdbc("jdbc:postgresql:dbserver", "schema.tablename", connectionProperties);
-//
-////            batch.foreachPartition((ForeachPartitionFunction<Row>) inserter::processRows);
-//        });
-
         streamingQuery.awaitTermination();
 
-    }
-
-    protected void processRows(Iterator<Row> rows) throws SQLException {
-        try (Connection connection = this.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(
-                     "INSERT INTO test.uc_news (" +
-                             "ID, " +
-                             "TITLE," +
-                             "URL," +
-                             "PUBLISHER," +
-                             "CATEGORY," +
-                             "STORY," +
-                             "HOSTNAME," +
-                             "TS) " +
-                             "VALUES (?,?,?,?,?,?,?,?)"
-             )) {
-            connection.setAutoCommit(false);
-
-            rows.forEachRemaining(row -> {
-                try {
-                    stmt.setInt(1, row.getInt(0));
-                    stmt.setString(2, row.getString(1));
-                    stmt.setString(3, row.getString(2));
-                    stmt.setString(4, row.getString(3));
-                    stmt.setString(5, row.getString(4));
-                    stmt.setString(6, row.getString(5));
-                    stmt.setString(7, row.getString(6));
-                    stmt.setTimestamp(8, row.getTimestamp(7));
-
-                    stmt.addBatch();
-                } catch (SQLException e) {
-                    throw new RuntimeException("Unable to insert record " + row, e);
-                }
-            });
-            stmt.executeBatch();
-            connection.commit();
-        }
     }
 
     private Dataset<Row> readStreamingDatasetWithSchema(String brokers, String topicName, SparkSession spark) {
@@ -109,7 +61,6 @@ public class RowInserter {
                 .option("kafka.bootstrap.servers", brokers)
                 .option("subscribe", topicName)
                 .load();
-
 
         StructType schema = getSchema();
 
@@ -144,21 +95,4 @@ public class RowInserter {
         return spark;
     }
 
-    public Connection getConnection() throws SQLException {
-
-        Connection conn = null;
-        Properties connectionProps = new Properties();
-        connectionProps.put("user", "postgres");
-        connectionProps.put("password", "postgres");
-
-
-        String url = "jdbc:postgres://" +
-                "localhost" +
-                ":" + "5432" + "/";
-        conn = DriverManager.getConnection(
-                url,
-                connectionProps);
-        System.out.println("Connected to database");
-        return conn;
-    }
 }
