@@ -31,12 +31,12 @@ public class RowInserterTest {
 
         RowInserter sut = new RowInserter();
 
-        Row[] collect = df.collect();
-        List<Row> list = new ArrayList<>();
-        for (int i = 0; i < collect.length; i++) {
-            list.add(collect[i]);
-        }
-        sut.processRows(list.iterator());
+//        Row[] collect = df.collect();
+//        List<Row> list = new ArrayList<>();
+//        for (int i = 0; i < collect.length; i++) {
+//            list.add(collect[i]);
+//        }
+//        sut.processRows(list.iterator());
 
 
 

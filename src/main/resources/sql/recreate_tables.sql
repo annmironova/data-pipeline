@@ -1,7 +1,7 @@
 drop schema if exists test;
 create schema if not exists test;
 
-create table uc_news (
+create table test.uc_news (
                          ID int,
                          TITLE varchar(256),
                          URL varchar(256),
