@@ -1,6 +1,5 @@
 package ru.spbu.streaming;
 
-import org.apache.spark.api.java.function.VoidFunction2;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
@@ -13,8 +12,6 @@ import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.jetbrains.annotations.NotNull;
-import scala.Function2;
-import scala.runtime.BoxedUnit;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -52,7 +49,7 @@ public class RowInserter {
                             .jdbc(url, "test.uc_news_autocreated", connectionProperties);
 
                 }
-        ).start();
+        ).trigger(Trigger.ProcessingTime("2 seconds")).start();
 
 //        datasetTransformed.writeStream().foreachBatch((batch, count) -> {
 //            Properties connectionProperties = new Properties();
