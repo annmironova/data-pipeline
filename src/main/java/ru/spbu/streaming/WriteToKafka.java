@@ -1,13 +1,17 @@
-import org.apache.spark.api.java.function.MapFunction;
+package ru.spbu.streaming;
+
 import org.apache.spark.sql.*;
 import static org.apache.spark.sql.functions.*;
 
 public class WriteToKafka {
     public static void main(String[] args) {
-
-        String brokers = "localhost:9092";
-        String sourceCsvPath = "C:/Users/saint/IdeaProjects/data-pipeline/src/main/resources/uci-news-aggregator.csv";
+        String sourceCsvPath = "src/main/resources/uci-news-aggregator.csv";
         String topicName = "uci_news";
+        writeKafka(sourceCsvPath, topicName);
+    }
+
+    public static void writeKafka(String sourceCsvPath, String topicName) {
+        String brokers = "localhost:29092";
 
         SparkSession spark = SparkSession
                 .builder()
@@ -28,4 +32,5 @@ public class WriteToKafka {
                 .option("topic", topicName)
                 .save();
     }
+
 }
