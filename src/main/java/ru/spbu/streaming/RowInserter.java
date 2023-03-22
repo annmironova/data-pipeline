@@ -6,6 +6,7 @@ import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
+import org.apache.spark.sql.streaming.StreamingQueryListener;
 import org.apache.spark.sql.streaming.Trigger;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
@@ -20,7 +21,6 @@ import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.from_json;
 
 public class RowInserter {
-
     public static void main(String[] args) throws TimeoutException, StreamingQueryException {
 
         String brokers = "localhost:29092";
@@ -37,8 +37,11 @@ public class RowInserter {
             throws StreamingQueryException, TimeoutException {
         RowInserter inserter = new RowInserter();
         SparkSession spark = inserter.getSparkSession();
-        Dataset<Row> datasetTransformed = inserter.readStreamingDatasetWithSchema(brokers, topicName, spark);
+        StreamingQueryListener streamingQueryListener = inserter.getStreamingQueryListener();
 
+        spark.streams().addListener(streamingQueryListener);
+
+        Dataset<Row> datasetTransformed = inserter.readStreamingDatasetWithSchema(brokers, topicName, spark);
         StreamingQuery streamingQuery = datasetTransformed.writeStream().foreachBatch(
                 (dataset, batchId) -> {
                     Properties connectionProperties = new Properties();
@@ -93,4 +96,18 @@ public class RowInserter {
         return spark;
     }
 
+    public StreamingQueryListener getStreamingQueryListener() {
+        StreamingQueryListener streamingQueryListener = new StreamingQueryListener() {
+            @Override
+            public void onQueryStarted(StreamingQueryListener.QueryStartedEvent queryStarted) {
+            }
+            @Override
+            public void onQueryTerminated(StreamingQueryListener.QueryTerminatedEvent queryTerminated) {
+            }
+            @Override
+            public void onQueryProgress(StreamingQueryListener.QueryProgressEvent queryProgress) {
+            }
+        };
+        return streamingQueryListener;
+    }
 }
