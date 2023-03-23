@@ -41,17 +41,22 @@ public class TestReadingFromKafka {
                 StreamingQueryListener streamingQueryListener = new StreamingQueryListener() {
                     @Override
                     public void onQueryStarted(StreamingQueryListener.QueryStartedEvent queryStarted) {
+
                     }
                     @Override
                     public void onQueryTerminated(StreamingQueryListener.QueryTerminatedEvent queryTerminated) {
+
                     }
                     @Override
                     public void onQueryProgress(StreamingQueryListener.QueryProgressEvent queryProgress) {
                         rows = rows + queryProgress.progress().numInputRows();
+
                     }
                 };
+
                 spark.streams().addListener(streamingQueryListener);
-                Dataset<Row> datasetTransformed = inserter.readStreamingDatasetWithSchema(brokers, topicName, spark);
+                Dataset<Row> dataset = inserter.readStreamingDataset(brokers, topicName, spark);
+                Dataset<Row> datasetTransformed = inserter.transformStreamingDataset(dataset);
                 StreamingQuery streamingQuery = datasetTransformed.writeStream().foreachBatch(
                         (ds, batchId) -> {
                             Properties connectionProperties = new Properties();

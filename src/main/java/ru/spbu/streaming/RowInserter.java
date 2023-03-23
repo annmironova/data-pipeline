@@ -38,33 +38,41 @@ public class RowInserter {
         RowInserter inserter = new RowInserter();
         SparkSession spark = inserter.getSparkSession();
         StreamingQueryListener streamingQueryListener = inserter.getStreamingQueryListener();
-
         spark.streams().addListener(streamingQueryListener);
+        Dataset<Row> dataset = inserter.readStreamingDataset(brokers, topicName, spark);
+        Dataset<Row> datasetTransformed = inserter.transformStreamingDataset(dataset);
+        StreamingQuery streamingQuery = inserter.writeStreamingDataset(user, password, url, table, datasetTransformed);
+        streamingQuery.awaitTermination();
+    }
 
-        Dataset<Row> datasetTransformed = inserter.readStreamingDatasetWithSchema(brokers, topicName, spark);
+    public StreamingQuery writeStreamingDataset(String user, String password, String url, String table, Dataset<Row> datasetTransformed)
+            throws TimeoutException{
         StreamingQuery streamingQuery = datasetTransformed.writeStream().foreachBatch(
-                (dataset, batchId) -> {
+                (ds, batchId) -> {
                     Properties connectionProperties = new Properties();
                     connectionProperties.put("user", user);
                     connectionProperties.put("password", password);
 
-                    dataset.write()
+                    ds.write()
                             .mode(SaveMode.Overwrite)
                             .jdbc(url, table, connectionProperties);
                 }
         ).trigger(Trigger.ProcessingTime("2 seconds")).start();
-        streamingQuery.awaitTermination();
+        return streamingQuery;
     }
 
-    public Dataset<Row> readStreamingDatasetWithSchema(String brokers, String topicName, SparkSession spark) {
+    public Dataset<Row> readStreamingDataset(String brokers, String topicName, SparkSession spark) {
         Dataset<Row> dataset = spark.readStream()
                 .format("kafka")
                 .option("kafka.bootstrap.servers", brokers)
                 .option("subscribe", topicName)
                 .load();
 
-        StructType schema = getSchema();
+        return dataset;
+    }
 
+    public Dataset<Row> transformStreamingDataset(Dataset<Row> dataset) {
+        StructType schema = getSchema();
         Dataset<Row> datasetTransformed = dataset
                 .selectExpr("CAST(value as string)")
                 .select(from_json(col("value"), schema))
