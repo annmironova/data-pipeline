@@ -5,13 +5,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import ru.spbu.streaming.RowInserter;
-import ru.spbu.streaming.WriteToKafka;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
@@ -99,12 +94,12 @@ public class RowInserterTest {
 
         try {
             String sqlTempTable = "CREATE TABLE temp_table_1 AS\n" +
-                    "WITH vals (ID, TITLE, UTL, PUBLISHER, CATEGORY, STORY, HOSTNAME, TIMESTAMP) AS (VALUES \n" +
-                    "\t('1', 'Title 1', 'http://www.url1.com', 'Publisher 1', 'e', 'abcdef1', 'www.publisher1.com', '1234567891'),\n" +
-                    "\t('2', 'Title 2', 'http://www.url2.com', 'Publisher 2', 't', 'abcdef2', 'www.publisher2.com', '1234567892'),\n" +
-                    "\t('3', 'Title 3', 'http://www.url3.com', 'Publisher 3', 'b', 'abcdef3', 'www.publisher3.com', '1234567893'),\n" +
-                    "\t('4', 'Title 4', 'http://www.url4.com', 'Publisher 4', 'b', 'abcdef4', 'www.publisher4.com', '1234567894'),\n" +
-                    "\t('5', 'Title 5', 'http://www.url5.com', 'Publisher 5', 'm', 'abcdef5', 'www.publisher5.com', '1234567895'))\n" +
+                    "WITH vals (ID, TITLE, URL, PUBLISHER, CATEGORY, STORY, HOSTNAME, TIMESTAMP) AS (VALUES \n" +
+                    "(1, 'Title 1', 'http://www.url1.com', 'Publisher 1', 'e', 'abcdef1', 'www.publisher1.com', 1234567891)," +
+                    "(2, 'Title 2', 'http://www.url2.com', 'Publisher 2', 't', 'abcdef2', 'www.publisher2.com', 1234567892)," +
+                    "(3, 'Title 3', 'http://www.url3.com', 'Publisher 3', 'b', 'abcdef3', 'www.publisher3.com', 1234567893)," +
+                    "(4, 'Title 4', 'http://www.url4.com', 'Publisher 4', 'b', 'abcdef4', 'www.publisher4.com', 1234567894)," +
+                    "(5, 'Title 5', 'http://www.url5.com', 'Publisher 5', 'm', 'abcdef5', 'www.publisher5.com', 1234567895))" +
                     "SELECT * FROM vals;";
             connection.createStatement().executeUpdate(sqlTempTable);
 
@@ -124,8 +119,6 @@ public class RowInserterTest {
         try {
             connection.createStatement().executeUpdate("DROP TABLE if exists public.temp_table_1");
             connection.createStatement().executeUpdate("DROP TABLE if exists test.table_1");
-            connection.createStatement().executeUpdate("DROP TABLE if exists test.table_2");
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
