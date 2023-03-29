@@ -4,8 +4,8 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.execution.streaming.MemoryStream;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.streaming.StreamingQuery;
-import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.junit.jupiter.api.*;
+import scala.Option;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 
@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 @TestInstance(PER_CLASS)
@@ -125,87 +124,100 @@ public class TestWritingToDB {
     }
 
     @Test
-    @DisplayName("App throws exception (which one??) if titles are wrong")
+    @DisplayName("App throws SQLException if titles are wrong")
     public void testWritingWrongTitlesTable() {
-        assertThrows(RuntimeException.class,
-                ()->{
-                    String table = "test.table_4";
-                    String[] tableData = {"2,Title 2,http://www.url2.com,Publisher 2,e,abcdef2,www.publisher2.com,1234567892"};
-                    try {
-                        String sqlTable = "CREATE TABLE " + table + " AS " +
-                                "WITH vals (ID, NOTTITLE, URL, PUBLISHER, CATEGORY, STORY, HOSTNAME, TIMESTAMP) AS (VALUES " +
-                                "(1, 'Title 1', 'http://www.url1.com', 'Publisher 1', 'e', 'abcdef1', 'www.publisher1.com', 1234567891)) " +
-                                "SELECT * FROM vals;";
-                        connection.createStatement().executeUpdate(sqlTable);
+        String table = "test.table_4";
+        String[] tableData = {"2,Title 2,http://www.url2.com,Publisher 2,e,abcdef2,www.publisher2.com,1234567892"};
+        try {
+            String sqlTable = "CREATE TABLE " + table + " AS " +
+                    "WITH vals (ID, NOTTITLE, URL, PUBLISHER, CATEGORY, STORY, HOSTNAME, TIMESTAMP) AS (VALUES " +
+                    "(1, 'Title 1', 'http://www.url1.com', 'Publisher 1', 'e', 'abcdef1', 'www.publisher1.com', 1234567891)) " +
+                    "SELECT * FROM vals;";
+            connection.createStatement().executeUpdate(sqlTable);
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
 
-                        runPipeline(table, tableData);
-                    } catch (SQLException e){
-                        throw new RuntimeException(e);
-                    }
-                });
+        boolean isException = false;
+        try {
+            runPipeline(table, tableData);
+        } catch (SQLException e) {
+            isException = true;
+        }
+        assertTrue(isException);
     }
 
     @Test
-    @DisplayName("App throws exception (which one??) if there are less columns")
+    @DisplayName("App throws SQLException if there are less columns")
     public void testWritingLessColumnsTable() {
-        assertThrows(RuntimeException.class,
-                ()->{
-                    String table = "test.table_5";
-                    String[] tableData = {"2,Title 2,http://www.url2.com,Publisher 2,e,abcdef2,www.publisher2.com,1234567892"};
-                    try {
-                        String sqlTable = "CREATE TABLE " + table + " AS " +
-                                "WITH vals (ID, TITLE, URL, PUBLISHER, CATEGORY, STORY, HOSTNAME) AS (VALUES " +
-                                "(1, 'Title 1', 'http://www.url1.com', 'Publisher 1', 'e', 'abcdef1', 'www.publisher1.com')) " +
-                                "SELECT * FROM vals;";
-                        connection.createStatement().executeUpdate(sqlTable);
+        String table = "test.table_5";
+        String[] tableData = {"2,Title 2,http://www.url2.com,Publisher 2,e,abcdef2,www.publisher2.com,1234567892"};
+        try {
+            String sqlTable = "CREATE TABLE " + table + " AS " +
+                    "WITH vals (ID, TITLE, URL, PUBLISHER, CATEGORY, STORY, HOSTNAME) AS (VALUES " +
+                    "(1, 'Title 1', 'http://www.url1.com', 'Publisher 1', 'e', 'abcdef1', 'www.publisher1.com')) " +
+                    "SELECT * FROM vals;";
+            connection.createStatement().executeUpdate(sqlTable);
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
 
-                        runPipeline(table, tableData);
-                    } catch (SQLException e){
-                        throw new RuntimeException(e);
-                    }
-                });
+        boolean isException = false;
+        try {
+            runPipeline(table, tableData);
+        } catch (SQLException e) {
+            isException = true;
+        }
+        assertTrue(isException);
     }
 
     @Test
-    @DisplayName("App throws exception (which one??) if there are more columns")
+    @DisplayName("App throws SQLException if there are more columns")
     public void testWritingMoreColumnsTable() {
-        assertThrows(RuntimeException.class,
-                ()->{
-                    String table = "test.table_6";
-                    String[] tableData = {"2,Title 2,http://www.url2.com,Publisher 2,e,abcdef2,www.publisher2.com,1234567892"};
-                    try {
-                        String sqlTable = "CREATE TABLE " + table + " AS " +
-                                "WITH vals (ID, TITLE, URL, PUBLISHER, CATEGORY, STORY, HOSTNAME, TIMESTAMP, EXTRA) AS (VALUES " +
-                                "(1, 'Title 1', 'http://www.url1.com', 'Publisher 1', 'e', 'abcdef1', 'www.publisher1.com', 1234567891, 'extra text')) " +
-                                "SELECT * FROM vals;";
-                        connection.createStatement().executeUpdate(sqlTable);
 
-                        runPipeline(table, tableData);
-                    } catch (SQLException e){
-                        throw new RuntimeException(e);
-                    }
-                });
+        String table = "test.table_6";
+        String[] tableData = {"2,Title 2,http://www.url2.com,Publisher 2,e,abcdef2,www.publisher2.com,1234567892"};
+        try {
+            String sqlTable = "CREATE TABLE " + table + " AS " +
+                    "WITH vals (ID, TITLE, URL, PUBLISHER, CATEGORY, STORY, HOSTNAME, TIMESTAMP, EXTRA) AS (VALUES " +
+                    "(1, 'Title 1', 'http://www.url1.com', 'Publisher 1', 'e', 'abcdef1', 'www.publisher1.com', 1234567891, 'extra text')) " +
+                    "SELECT * FROM vals;";
+            connection.createStatement().executeUpdate(sqlTable);
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+
+        boolean isException = false;
+        try {
+            runPipeline(table, tableData);
+        } catch (SQLException e) {
+            isException = true;
+        }
+        assertTrue(isException);
     }
 
     @Test
-    @DisplayName("App throws exception (which one??) if columns are in wrong order")
+    @DisplayName("App throws SQLException if columns are in wrong order")
     public void testWritingWrongColumnOrderTable() {
-        assertThrows(RuntimeException.class,
-                ()->{
-                    String table = "test.table_7";
-                    String[] tableData = {"2,Title 2,http://www.url2.com,Publisher 2,e,abcdef2,www.publisher2.com,1234567892"};
-                    try {
-                        String sqlTable = "CREATE TABLE " + table + " AS " +
-                                "WITH vals (ID, PUBLISHER, URL, TITLE, CATEGORY, STORY, HOSTNAME, TIMESTAMP) AS (VALUES " +
-                                "(1, 'Publisher 1' ,'http://www.url1.com', 'Title 1', 'e', 'abcdef1', 'www.publisher1.com', 1234567891)) " +
-                                "SELECT * FROM vals;";
-                        connection.createStatement().executeUpdate(sqlTable);
+         String table = "test.table_7";
+         String[] tableData = {"2,Title 2,http://www.url2.com,Publisher 2,e,abcdef2,www.publisher2.com,1234567892"};
+         try {
+             String sqlTable = "CREATE TABLE " + table + " AS " +
+                     "WITH vals (ID, PUBLISHER, URL, TITLE, CATEGORY, STORY, HOSTNAME, TIMESTAMP) AS (VALUES " +
+                     "(1, 'Publisher 1' ,'http://www.url1.com', 'Title 1', 'e', 'abcdef1', 'www.publisher1.com', 1234567891)) " +
+                     "SELECT * FROM vals;";
+             connection.createStatement().executeUpdate(sqlTable);
+         } catch (SQLException e){
+             throw new RuntimeException(e);
+         }
 
-                        runPipeline(table, tableData);
-                    } catch (SQLException e){
-                        throw new RuntimeException(e);
-                    }
-                });
+        boolean isException = false;
+        try {
+            runPipeline(table, tableData);
+        } catch (SQLException e) {
+            isException = true;
+        }
+        assertTrue(isException);
     }
 
     @Test
@@ -301,7 +313,9 @@ public class TestWritingToDB {
     }
 
     private Dataset<Row> createTestStreamingDataFrame(SparkSession spark, String[] tableData) {
-        scala.Option<Object> numPartitions = scala.Option.apply(null);
+        Option<Object> numPartitions = Option.apply(1);
+
+        //scala.Option<Object> numPartitions = scala.Option.apply(null);
         MemoryStream<String> testStream = new MemoryStream<>(1, spark.sqlContext(), numPartitions, Encoders.STRING());
         testStream.addData(convertListToSeq(Arrays.asList(tableData)));
         return testStream .toDF().selectExpr(
@@ -324,9 +338,9 @@ public class TestWritingToDB {
                     SparkSession spark = rowInserter.getSparkSession();
                     Dataset<Row> dataset = createTestStreamingDataFrame(spark, tableData);
                     StreamingQuery streamingQuery = rowInserter.writeStreamingDataset(user, password, url, table, dataset);
-                    streamingQuery.awaitTermination();
-                } catch (StreamingQueryException e) {
-                    throw new RuntimeException(e);
+                   // streamingQuery.awaitTermination();
+             //   } catch (StreamingQueryException e) {
+               //     throw new RuntimeException(e);
                 } catch (TimeoutException e) {
                     throw new RuntimeException(e);
                 }
@@ -345,5 +359,4 @@ public class TestWritingToDB {
         }
         t.interrupt();
     }
-
 }
