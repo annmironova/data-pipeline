@@ -7,9 +7,7 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.execution.streaming.MemoryStream;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import scala.Option;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
@@ -25,8 +23,6 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
-
-// ALL TIMEOUTEXCEPTIONS TO SQLEXCEPTIONS
 @TestInstance(PER_CLASS)
 public class NonFuncTestWriting {
     public String url = "jdbc:postgresql://localhost:5432/postgres";
@@ -48,6 +44,7 @@ public class NonFuncTestWriting {
     }
 
     @Test
+    @DisplayName("App throws SQLException if table is deleted")
     public void testDeleteTable() {
         String table = "test.nf_w_table_1";
         String SQLrequest = "DROP TABLE if exists test.nf_w_table_1";
@@ -57,6 +54,7 @@ public class NonFuncTestWriting {
 
 
     @Test
+    @DisplayName("App throws SQLException if column is renamed")
     public void testRenameColumn(){
         String table = "test.nf_w_table_2";
         String SQLrequest = "ALTER TABLE test.nf_w_table_2 RENAME COLUMN \"ID\" TO \"NEW_ID\";";
@@ -65,6 +63,7 @@ public class NonFuncTestWriting {
     }
 
     @Test
+    @DisplayName("App throws SQLException if column is deleted")
     public void testDeleteColumn(){
         String table = "test.nf_w_table_3";
         String SQLrequest = "ALTER TABLE test.nf_w_table_3 DROP COLUMN \"ID\";";
@@ -73,11 +72,30 @@ public class NonFuncTestWriting {
     }
 
     @Test
+    @DisplayName("App throws SQLException if new column added")
     public void testAddColumn(){
         String table = "test.nf_w_table_4";
         String SQLrequest = "ALTER TABLE test.nf_w_table_4 ADD COLUMN \"NEW_COLUMN\" VARCHAR;";
         boolean isException = changeTable(table, SQLrequest);
         assertTrue(isException);
+    }
+
+    @AfterAll
+    public void closeConnection() {
+        try {
+            connection.createStatement().executeUpdate("DROP TABLE if exists test.nf_w_table_1");
+            connection.createStatement().executeUpdate("DROP TABLE if exists test.nf_w_table_2");
+            connection.createStatement().executeUpdate("DROP TABLE if exists test.nf_w_table_3");
+            connection.createStatement().executeUpdate("DROP TABLE if exists test.nf_w_table_4");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (connection != null) { connection.close();}
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private boolean changeTable(String table, String SQLrequest) {
@@ -91,7 +109,7 @@ public class NonFuncTestWriting {
         try {
             StreamingQuery streamingQuery = rowInserter.writeStreamingDataset(user, password, url, table, dataset);
             streamingQuery.awaitTermination(25000);
-        } catch (TimeoutException e) {
+        } catch (SQLException e) {
             isException = true;
         } catch (StreamingQueryException e) {
             throw new RuntimeException(e);
