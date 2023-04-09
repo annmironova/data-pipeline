@@ -25,6 +25,8 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+
+// ALL TIMEOUTEXCEPTIONS TO SQLEXCEPTIONS
 @TestInstance(PER_CLASS)
 public class NonFuncTestWriting {
     public String url = "jdbc:postgresql://localhost:5432/postgres";
@@ -46,19 +48,63 @@ public class NonFuncTestWriting {
     }
 
     @Test
-    public void testDeleteTable() throws TimeoutException, StreamingQueryException {
+    public void testDeleteTable() {
         String table = "test.nf_w_table_1";
-        boolean isException = false;
-        String[] tableData = {"1,Title 1,http://www.url1.com,Publisher 1,e,abcdef1,www.publisher1.com,1234567891"};
+        String SQLrequest = "DROP TABLE if exists test.nf_w_table_1";
+        boolean isException = changeTable(table, SQLrequest);
+        assertTrue(isException);
+    }
 
+
+    @Test
+    public void testRenameColumn(){
+        String table = "test.nf_w_table_2";
+        String SQLrequest = "ALTER TABLE test.nf_w_table_2 RENAME COLUMN \"ID\" TO \"NEW_ID\";";
+        boolean isException = changeTable(table, SQLrequest);
+        assertTrue(isException);
+    }
+
+    @Test
+    public void testDeleteColumn(){
+        String table = "test.nf_w_table_3";
+        String SQLrequest = "ALTER TABLE test.nf_w_table_3 DROP COLUMN \"ID\";";
+        boolean isException = changeTable(table, SQLrequest);
+        assertTrue(isException);
+    }
+
+    @Test
+    public void testAddColumn(){
+        String table = "test.nf_w_table_4";
+        String SQLrequest = "ALTER TABLE test.nf_w_table_4 ADD COLUMN \"NEW_COLUMN\" VARCHAR;";
+        boolean isException = changeTable(table, SQLrequest);
+        assertTrue(isException);
+    }
+
+    private boolean changeTable(String table, String SQLrequest) {
+        boolean isException = false;
         RowInserter rowInserter = new RowInserter();
         SparkSession spark = rowInserter.getSparkSession();
+        String[] tableData = {"1,Title 1,http://www.url1.com,Publisher 1,e,abcdef1,www.publisher1.com,1234567891"};
         Dataset<Row> dataset = createTestStreamingDataFrame(spark, tableData);
+        Thread t = createChangingThread(SQLrequest);
+        t.start();
+        try {
+            StreamingQuery streamingQuery = rowInserter.writeStreamingDataset(user, password, url, table, dataset);
+            streamingQuery.awaitTermination(25000);
+        } catch (TimeoutException e) {
+            isException = true;
+        } catch (StreamingQueryException e) {
+            throw new RuntimeException(e);
+        }
+        return isException;
+    }
+
+    private Thread createChangingThread(String SQLrequest) {
         Thread t = new Thread(() -> {
             if (!Thread.interrupted()) {
                 try {
                     Thread.sleep(15000);
-                    connection.createStatement().executeUpdate("DROP TABLE if exists test.nf_w_table_1");
+                    connection.createStatement().executeUpdate(SQLrequest);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 } catch (InterruptedException e) {
@@ -66,14 +112,7 @@ public class NonFuncTestWriting {
                 }
             }
         });
-        t.start();
-        try {
-            StreamingQuery streamingQuery = rowInserter.writeStreamingDataset(user, password, url, table, dataset);
-            streamingQuery.awaitTermination(25000);
-        } catch (TimeoutException e) {
-            isException = true;
-        }
-        assertTrue(isException);
+        return t;
     }
 
     private Seq<String> convertListToSeq(List<String> inputList) {
