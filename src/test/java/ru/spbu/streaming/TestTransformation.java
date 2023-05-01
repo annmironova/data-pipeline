@@ -48,8 +48,8 @@ public class TestTransformation {
     //actually failed because of null
     @Test
     public void testTransform() throws TimeoutException {
-        RowInserter rowInserter = new RowInserter();
-        SparkSession spark = rowInserter.getSparkSession();
+        StreamingPipeline streamingPipeline = new StreamingPipeline();
+        SparkSession spark = streamingPipeline.getSparkSession();
         Option<Object> numPartitions = Option.apply(1);
 
         MemoryStream<String> testStream = new MemoryStream<>(1, spark.sqlContext(), numPartitions, Encoders.STRING());
@@ -69,7 +69,7 @@ public class TestTransformation {
                 "cast(split(value,'[,]')[6] as string) as HOSTNAME",
                 "cast(split(value,'[,]')[7] as int) as TIMESTAMP");*/
         Dataset<String> sessions = testStream.toDS();
-        Dataset filteredDF = rowInserter.transformStreamingDataset(sessions.toDF());
+        Dataset filteredDF = streamingPipeline.transformStreamingDataset(sessions.toDF());
 
         StreamingQuery streamingQuery = filteredDF
                 .writeStream()

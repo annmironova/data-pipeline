@@ -87,7 +87,7 @@ public class TestE2E {
         Thread t = new Thread(() -> {
             if (!Thread.interrupted()) {
                 try {
-                    RowInserter.rowInserter(brokers, topicName, user, password, url, table);
+                    StreamingPipeline.rowInserter(brokers, topicName, user, password, url, table);
                 } catch (StreamingQueryException e) {
                     throw new RuntimeException(e);
                 } catch (TimeoutException e) {

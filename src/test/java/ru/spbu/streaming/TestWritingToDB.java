@@ -139,11 +139,11 @@ public class TestWritingToDB {
         }
 
         boolean isException = false;
-        try {
+//        try {
             runPipeline(table, tableData);
-        } catch (SQLException e) {
-            isException = true;
-        }
+//        } catch (SQLException e) {
+//            isException = true;
+//        }
         assertTrue(isException);
     }
 
@@ -163,11 +163,11 @@ public class TestWritingToDB {
         }
 
         boolean isException = false;
-        try {
+//        try {
             runPipeline(table, tableData);
-        } catch (SQLException e) {
-            isException = true;
-        }
+//        } catch (SQLException e) {
+//            isException = true;
+//        }
         assertTrue(isException);
     }
 
@@ -188,11 +188,11 @@ public class TestWritingToDB {
         }
 
         boolean isException = false;
-        try {
+//        try {
             runPipeline(table, tableData);
-        } catch (SQLException e) {
-            isException = true;
-        }
+//        } catch (SQLException e) {
+//            isException = true;
+//        }
         assertTrue(isException);
     }
 
@@ -212,11 +212,11 @@ public class TestWritingToDB {
          }
 
         boolean isException = false;
-        try {
+//        try {
             runPipeline(table, tableData);
-        } catch (SQLException e) {
-            isException = true;
-        }
+//        } catch (SQLException e) {
+//            isException = true;
+//        }
         assertTrue(isException);
     }
 
@@ -334,10 +334,10 @@ public class TestWritingToDB {
         Thread t = new Thread(() -> {
             if (!Thread.interrupted()) {
                 try {
-                    RowInserter rowInserter = new RowInserter();
-                    SparkSession spark = rowInserter.getSparkSession();
+                    StreamingPipeline streamingPipeline = new StreamingPipeline();
+                    SparkSession spark = streamingPipeline.getSparkSession();
                     Dataset<Row> dataset = createTestStreamingDataFrame(spark, tableData);
-                    StreamingQuery streamingQuery = rowInserter.writeStreamingDataset(user, password, url, table, dataset);
+                    StreamingQuery streamingQuery = streamingPipeline.writeStreamingDataset(user, password, url, table, dataset, "");
                    // streamingQuery.awaitTermination();
              //   } catch (StreamingQueryException e) {
                //     throw new RuntimeException(e);

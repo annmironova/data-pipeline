@@ -94,6 +94,11 @@
       <version>5.4.0</version>
       <scope>test</scope>
     </dependency>
+      <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>7.0.1-ccs</version>
+      </dependency>
 
   </dependencies>
 

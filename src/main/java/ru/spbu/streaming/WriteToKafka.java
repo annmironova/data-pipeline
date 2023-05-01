@@ -11,7 +11,7 @@ public class WriteToKafka {
     }
 
     public static void writeKafka(String sourceCsvPath, String topicName) {
-        String brokers = "localhost:29092";
+        String brokers = "localhost:9092";
 
         SparkSession spark = SparkSession
                 .builder()

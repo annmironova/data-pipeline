@@ -21,13 +21,13 @@ public class TestReadingFromKafka {
 
     public List<Row> runReading(String topicName, String sourceCsvPath, String queryName, int rows) {
         String brokers = "localhost:29092";
-        RowInserter rowInserter = new RowInserter();
-        SparkSession spark = rowInserter.getSparkSession();
+        StreamingPipeline streamingPipeline = new StreamingPipeline();
+        SparkSession spark = streamingPipeline.getSparkSession();
         Thread t = new Thread(() -> {
             if (!Thread.interrupted()) {
                 try {
-                    Dataset<Row> dataset = rowInserter.readStreamingDataset(brokers, topicName, spark);
-                    Dataset<Row> datasetTransformed = rowInserter.transformStreamingDataset(dataset);
+                    Dataset<Row> dataset = streamingPipeline.readStreamingDataset(brokers, topicName, spark);
+                    Dataset<Row> datasetTransformed = streamingPipeline.transformStreamingDataset(dataset);
                     StreamingQuery streamingQuery = datasetTransformed
                             .writeStream()
                             .format("memory")

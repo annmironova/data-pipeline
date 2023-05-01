@@ -100,18 +100,20 @@ public class NonFuncTestWriting {
 
     private boolean changeTable(String table, String SQLrequest) {
         boolean isException = false;
-        RowInserter rowInserter = new RowInserter();
-        SparkSession spark = rowInserter.getSparkSession();
+        StreamingPipeline streamingPipeline = new StreamingPipeline();
+        SparkSession spark = streamingPipeline.getSparkSession();
         String[] tableData = {"1,Title 1,http://www.url1.com,Publisher 1,e,abcdef1,www.publisher1.com,1234567891"};
         Dataset<Row> dataset = createTestStreamingDataFrame(spark, tableData);
         Thread t = createChangingThread(SQLrequest);
         t.start();
         try {
-            StreamingQuery streamingQuery = rowInserter.writeStreamingDataset(user, password, url, table, dataset);
+            StreamingQuery streamingQuery = streamingPipeline.writeStreamingDataset(user, password, url, table, dataset, "");
             streamingQuery.awaitTermination(25000);
         } catch (SQLException e) {
             isException = true;
         } catch (StreamingQueryException e) {
+            throw new RuntimeException(e);
+        } catch (TimeoutException e) {
             throw new RuntimeException(e);
         }
         return isException;
