@@ -30,6 +30,7 @@ public class TestE2E {
     String url = "jdbc:postgresql://localhost:5432/postgres";
     String user = "postgres";
     String password = "postgres";
+    String option = "latest";
     Properties connectionProperties;
     Connection connection;
 
@@ -183,7 +184,7 @@ public class TestE2E {
         Thread t = new Thread(() -> {
             if (!Thread.interrupted()) {
                 try {
-                    StreamingPipeline.rowInserter(brokers, topicName, DLQtopicName, user, password, url, table);
+                    StreamingPipeline.rowInserter(brokers, topicName, DLQtopicName, user, password, url, table, option);
                 } catch (StreamingQueryException e) {
                     throw new RuntimeException(e);
                 } catch (TimeoutException e) {

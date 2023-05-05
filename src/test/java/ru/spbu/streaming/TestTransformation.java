@@ -90,7 +90,6 @@ public class TestTransformation {
         assertEquals(expectedResult, result);
     }
 
-
     @Test
     @DisplayName("Row with null ID is identically transformed")
     public void testTransformNullID(){
@@ -242,7 +241,7 @@ public class TestTransformation {
     }
 
     @Test
-    @DisplayName("Row with real ID number is transformed to row with null in ID column")
+    @DisplayName("Row with negative ID number is transformed to row with null in ID column")
     public void testNegativeIDNumber(){
         String rowInJson = createJsonInString("-101", "Title 1","http://www.url1.com",
                 "Publisher 1","e","abcdef1","www.publisher1.com","1234567891");

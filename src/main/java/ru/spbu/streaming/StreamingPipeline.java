@@ -21,21 +21,23 @@ public class StreamingPipeline {
 
         String brokers = "localhost:29092";
         String topicName = "uci_news1";
+        String DLQTopicName = "dlq";
         String user = "postgres";
         String password = "postgres";
         String url = "jdbc:postgresql://localhost:5432/postgres";
         String table = "test.uc_news_autocreated1";
-        rowInserter(brokers, topicName, user, password, url, table);
+        String option = "earliest";
+        rowInserter(brokers, topicName, DLQTopicName, user, password, url, table, option);
     }
 
 
-    public static void rowInserter(String brokers, String topicName, String user, String password, String url, String table)
+    public static void rowInserter(String brokers, String topicName, String DLQTopicName, String user, String password, String url, String table, String option)
             throws StreamingQueryException, TimeoutException {
         StreamingPipeline inserter = new StreamingPipeline();
         SparkSession spark = inserter.getSparkSession();
-        Dataset<Row> dataset = inserter.readStreamingDataset(brokers, topicName, spark);
+        Dataset<Row> dataset = inserter.readStreamingDataset(option, brokers, topicName, spark);
         Dataset<Row> datasetTransformed = inserter.transformStreamingDataset(dataset);
-        StreamingQuery streamingQuery = inserter.writeStreamingDataset(user, password, url, table, datasetTransformed, brokers);
+        StreamingQuery streamingQuery = inserter.writeStreamingDataset(user, password, url, table, datasetTransformed, brokers, DLQTopicName);
         streamingQuery.awaitTermination();
     }
 
@@ -44,7 +46,8 @@ public class StreamingPipeline {
                                                 String url,
                                                 String table,
                                                 Dataset<Row> datasetTransformed,
-                                                String brokers)
+                                                String brokers,
+                                                String DLQTopicName)
             throws TimeoutException {
         return datasetTransformed.writeStream().foreachBatch(
                 (ds, batchId) -> {
@@ -72,7 +75,7 @@ public class StreamingPipeline {
                     invalidRecords.write()
                             .format("kafka")
                             .option("kafka.bootstrap.servers", brokers)
-                            .option("topic", "dlq")
+                            .option("topic", DLQTopicName)
                             .save();
 
                     ds.unpersist();
@@ -80,14 +83,13 @@ public class StreamingPipeline {
         ).trigger(Trigger.ProcessingTime("2 seconds")).start();
     }
 
-    public Dataset<Row> readStreamingDataset(String brokers, String topicName, SparkSession spark) {
-        Dataset<Row> dataset = spark.readStream()
+    public Dataset<Row> readStreamingDataset(String option, String brokers, String topicName, SparkSession spark) {
+        return spark.readStream()
                 .format("kafka")
                 .option("kafka.bootstrap.servers", brokers)
                 .option("subscribe", topicName)
+                .option("startingOffsets", option)
                 .load();
-
-        return dataset;
     }
 
     public Dataset<Row> transformStreamingDataset(Dataset<Row> dataset) {

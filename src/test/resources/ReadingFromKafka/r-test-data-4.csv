@@ -1,6 +1,2 @@
 ID,TITLE,URL,PUBLISHER,CATEGORY,STORY,HOSTNAME,TIMESTAMP
-1,"Title 1","http://www.url1.com",Publisher 1,e,abcdef1,www.publisher1.com,1234567891
-2,"Title 2","http://www.url2.com",Publisher 2,t,abcdef2,www.publisher2.com,1234567892
-3,"Title 3","http://www.url3.com",Publisher 3,b,abcdef3,www.publisher3.com,1234567893
-4,"Title 4","http://www.url4.com",Publisher 4,b,abcdef4,www.publisher4.com,1234567894
-5,"Title 5","http://www.url5.com",Publisher 5,m,abcdef5,www.publisher5.com,1234567895
+1,null,"http://www.url1.com",Publisher 1,e,abcdef1,www.publisher1.com,1234567891

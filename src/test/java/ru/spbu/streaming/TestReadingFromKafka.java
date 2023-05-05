@@ -1,21 +1,14 @@
 package ru.spbu.streaming;
 
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.DeleteTopicsResult;
-import org.apache.kafka.clients.admin.DescribeTopicsResult;
-import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.streaming.StreamingQuery;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,7 +19,8 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 public class TestReadingFromKafka {
 
-    String brokers = "localhost:9092";
+    String brokers = "localhost:29092";
+    String option = "latest";
 
     @Test
     @DisplayName("Data from existing topic is read")
@@ -43,9 +37,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Dataset with correct data is read")
     public void testReadingCorrectDataset() {
-        String topicName = "r_test_topic_4";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-4.csv";
-        String queryName = "rTestQuery4";
+        String topicName = "r_test_topic_2";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-2.csv";
+        String queryName = "rTestQuery2";
         int rows = 5;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -67,9 +61,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with null ID is read")
     public void testReadingNullID() {
-        String topicName = "r_test_topic_8";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-8.csv";
-        String queryName = "rTestQuery8";
+        String topicName = "r_test_topic_3";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-3.csv";
+        String queryName = "rTestQuery3";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -81,10 +75,11 @@ public class TestReadingFromKafka {
 
     @Test
     @DisplayName("Row with null TITLE is read")
-    public void testReadingNullTITLE() {
-        String topicName = "r_test_topic_9";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-9.csv";
-        String queryName = "rTestQuery9";
+    public void
+    testReadingNullTITLE() {
+        String topicName = "r_test_topic_4";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-4.csv";
+        String queryName = "rTestQuery4";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -97,9 +92,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with null URL is read")
     public void testReadingNullURL() {
-        String topicName = "r_test_topic_10";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-10.csv";
-        String queryName = "rTestQuery10";
+        String topicName = "r_test_topic_5";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-5.csv";
+        String queryName = "rTestQuery5";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -112,9 +107,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with null PUBLISHER is read")
     public void testReadingNullPUBLISHER() {
-        String topicName = "r_test_topic_11";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-11.csv";
-        String queryName = "rTestQuery11";
+        String topicName = "r_test_topic_6";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-6.csv";
+        String queryName = "rTestQuery6";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -127,9 +122,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with b in CATEGORY is read")
     public void testReadingCategoryB() {
-        String topicName = "r_test_topic_14";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-14.csv";
-        String queryName = "rTestQuery14";
+        String topicName = "r_test_topic_7";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-7.csv";
+        String queryName = "rTestQuery7";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -143,9 +138,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with t in CATEGORY is read")
     public void testReadingCategoryT() {
-        String topicName = "r_test_topic_15";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-15.csv";
-        String queryName = "rTestQuery15";
+        String topicName = "r_test_topic_8";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-8.csv";
+        String queryName = "rTestQuery8";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -159,9 +154,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with english e in CATEGORY is read")
     public void testReadingEngCategoryE() {
-        String topicName = "r_test_topic_16";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-16.csv";
-        String queryName = "rTestQuery16";
+        String topicName = "r_test_topic_9";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-9.csv";
+        String queryName = "rTestQuery9";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -175,9 +170,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with m in CATEGORY is read")
     public void testReadingCategoryM() {
-        String topicName = "r_test_topic_17";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-17.csv";
-        String queryName = "rTestQuery17";
+        String topicName = "r_test_topic_10";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-10.csv";
+        String queryName = "rTestQuery10";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -191,9 +186,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with null CATEGORY is read")
     public void testReadingNullCATEGORY() {
-        String topicName = "r_test_topic_18";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-18.csv";
-        String queryName = "rTestQuery18";
+        String topicName = "r_test_topic_11";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-11.csv";
+        String queryName = "rTestQuery11";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -206,9 +201,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with null STORY is read")
     public void testReadingNullSTORY() {
-        String topicName = "r_test_topic_22";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-22.csv";
-        String queryName = "rTestQuery22";
+        String topicName = "r_test_topic_12";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-12.csv";
+        String queryName = "rTestQuery12";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -221,9 +216,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with null HOSTNAME is read")
     public void testReadingNullHOSTNAME() {
-        String topicName = "r_test_topic_23";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-23.csv";
-        String queryName = "rTestQuery23";
+        String topicName = "r_test_topic_13";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-13.csv";
+        String queryName = "rTestQuery13";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -236,9 +231,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with null TIMESTAMP is read")
     public void testReadingNullTIMESTAMP() {
-        String topicName = "r_test_topic_29";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-29.csv";
-        String queryName = "rTestQuery29";
+        String topicName = "r_test_topic_14";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-14.csv";
+        String queryName = "rTestQuery14";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -251,9 +246,9 @@ public class TestReadingFromKafka {
     @Test
     @DisplayName("Row with all null values is read")
     public void testReadingOnlyNullValues() {
-        String topicName = "r_test_topic_30";
-        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-30.csv";
-        String queryName = "rTestQuery30";
+        String topicName = "r_test_topic_15";
+        String sourceCsvPath = "src/test/resources/ReadingFromKafka/r-test-data-15.csv";
+        String queryName = "rTestQuery15";
         int rows = 1;
         List<Row> result = runReading(topicName, sourceCsvPath, queryName, rows);
 
@@ -263,48 +258,14 @@ public class TestReadingFromKafka {
         assertEquals(expectedResult, result);
     }
 
-    @AfterAll
-    public void deleteTopics() {
-        Properties props = new Properties();
-        props.put("bootstrap.servers", brokers);
-        AdminClient admin = KafkaAdminClient.create(props);
-
-        ArrayList<String> topics = new ArrayList<>();
-       // topics.add("r_test_topic_1");
-        topics.add("r_test_topic_4");
-      /*  topics.add("r_test_topic_4");
-        topics.add("r_test_topic_8");
-        topics.add("r_test_topic_9");
-        topics.add("r_test_topic_10");
-        topics.add("r_test_topic_11");
-        topics.add("r_test_topic_14");
-        topics.add("r_test_topic_15");
-        topics.add("r_test_topic_16");
-        topics.add("r_test_topic_17");
-        topics.add("r_test_topic_18");
-        topics.add("r_test_topic_22");
-        topics.add("r_test_topic_23");
-        topics.add("r_test_topic_29");
-        topics.add("r_test_topic_30"); */
-        DeleteTopicsResult deleteTopicsResult = admin.deleteTopics(Collections.singletonList("r_test_topic_4"));
-        while (!deleteTopicsResult.all().isDone()) {
-
-            // Wait for future task to complete
-
-        };
-        System.out.println("topic deleted");
-
-    }
-
 
     private List<Row> runReading(String topicName, String sourceCsvPath, String queryName, int rows) {
-        String brokers = "localhost:29092";
         StreamingPipeline rowInserter = new StreamingPipeline();
         SparkSession spark = rowInserter.getSparkSession();
         Thread t = new Thread(() -> {
             if (!Thread.interrupted()) {
                 try {
-                    Dataset<Row> dataset = rowInserter.readStreamingDataset(brokers, topicName, spark);
+                    Dataset<Row> dataset = rowInserter.readStreamingDataset(option, brokers, topicName, spark);
                     Dataset<Row> datasetTransformed = dataset
                             .selectExpr("CAST(value as string)");
                     StreamingQuery streamingQuery = datasetTransformed
